@@ -1,15 +1,19 @@
 import React from 'react'
 import Navbar from '../components/Navbar';
 import { Outlet } from 'react-router-dom';
+import Footer from '../components/Footer';
 
 const Main = () => {
   return (
     <div>
-        {/* Navbar */}
-        <Navbar />
-        {/* Outlet */}
+      {/* Navbar */}
+      <Navbar />
+      {/* Outlet */}
+      <div className='min-h-[calc(100vh-306px)]'>
         <Outlet />
-        {/* Footer */}
+      </div>
+      {/* Footer */}
+      <Footer />
     </div>
   )
 }
