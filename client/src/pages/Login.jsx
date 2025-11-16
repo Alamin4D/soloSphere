@@ -9,7 +9,6 @@ const Login = () => {
     const navigate = useNavigate();
     const { signIn, signInWithGoogle } = useContext(AuthContext);
 
-
     // Google Signin
     const handleGoogleSignIn = async () => {
         try {
