@@ -40,7 +40,6 @@ const Login = () => {
             toast.error(err?.message)
         }
     }
-    
 
     return (
         <div className='flex justify-center items-center min-h-[calc(100vh-306px)] my-12'>
