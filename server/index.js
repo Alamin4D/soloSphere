@@ -35,6 +35,7 @@ async function run() {
       res.send(result);
     })
     
+    
     // Get a single data from db using job id
     app.get('/job/:id', async(req, res)=>{
       const id = req.params.id;
