@@ -34,7 +34,7 @@ async function run() {
       const result = await jobsCollection.find().toArray();
       res.send(result);
     })
-    
+
     
     // Get a single data from db using job id
     app.get('/job/:id', async(req, res)=>{
@@ -53,6 +53,7 @@ async function run() {
     })
 
 
+    
     // Save a job data in db
     app.post('/job', async(req, res)=>{
       const jobData = req.body;
