@@ -42,6 +42,7 @@ async function run() {
       const result = await jobsCollection.findOne(query);
       res.send(result);
     })
+    
 
     // Save a bid data in db
     app.post('/bid', async(req, res)=>{
