@@ -69,7 +69,6 @@ async function run() {
       res.send(result);
     })
 
-
     // delete a job data from db
     app.delete('/job/:id', async (req, res) => {
       const id = req.params.id;
