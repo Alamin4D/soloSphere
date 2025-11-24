@@ -7,9 +7,9 @@ const app = express()
 
 // Middleware
 const corsOptions = {
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
-    credentials: true, //access-control-allow-credentials:true
-    optionSuccessStatus: 200,
+  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
 }
 app.use(cors(corsOptions))
 app.use(express.json())
@@ -35,31 +35,80 @@ async function run() {
       res.send(result);
     })
 
-    
+
     // Get a single data from db using job id
-    app.get('/job/:id', async(req, res)=>{
+    app.get('/job/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await jobsCollection.findOne(query);
       res.send(result);
     })
 
 
     // Save a bid data in db
-    app.post('/bid', async(req, res)=>{
+    app.post('/bid', async (req, res) => {
       const bidData = req.body;
       const result = await bidsCollection.insertOne(bidData);
       res.send(result);
     })
 
 
-    
+
     // Save a job data in db
-    app.post('/job', async(req, res)=>{
+    app.post('/job', async (req, res) => {
       const jobData = req.body;
       const result = await jobsCollection.insertOne(jobData);
       res.send(result);
     })
+
+    // Get all jobs posted by a specific user
+    app.get('/jobs/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { 'buyer.email': email };
+      const result = await jobsCollection.find(query).toArray();
+      res.send(result);
+    })
+
+
+    // delete a job data from db
+    app.delete('/job/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await jobsCollection.deleteOne(query);
+      res.send(result);
+    })
+
+    // update a job in db
+    app.put('/job/:id', async (req, res) => {
+      const id = req.params.id
+      const jobData = req.body
+      const query = { _id: new ObjectId(id) }
+      const options = { upsert: true }
+      const updateDoc = {
+        $set: {
+          ...jobData,
+        },
+      }
+      const result = await jobsCollection.updateOne(query, updateDoc, options)
+      res.send(result)
+    })
+
+    // get all bids for a user by email from db
+    app.get('/my-bids/:email', async (req, res) => {
+      const email = req.params.email
+      const query = { email }
+      const result = await bidsCollection.find(query).toArray()
+      res.send(result)
+    })
+
+    //Get all bid requests from db for job owner
+    app.get('/bid-requests/:email', async (req, res) => {
+      const email = req.params.email
+      const query = { 'buyer.email': email }
+      const result = await bidsCollection.find(query).toArray()
+      res.send(result)
+    })
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
