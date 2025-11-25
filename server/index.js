@@ -46,7 +46,6 @@ async function run() {
         .send({ success: true })
     })
     
-
     // Clear token on logout
     app.get('/logout', (req, res) => {
       res
