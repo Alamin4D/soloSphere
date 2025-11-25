@@ -45,7 +45,7 @@ async function run() {
         })
         .send({ success: true })
     })
-    
+
     
     // Clear token on logout
     app.get('/logout', (req, res) => {
@@ -138,6 +138,7 @@ async function run() {
       const result = await bidsCollection.find(query).toArray()
       res.send(result)
     })
+    
 
     // update bid status
     app.patch('/bid/:id', async (req, res)=>{
