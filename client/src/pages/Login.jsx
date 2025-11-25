@@ -4,6 +4,7 @@ import bgImage from "../assets/images/login.jpg";
 import { useContext, useEffect } from "react";
 import { AuthContext } from "../provider/AuthProvider";
 import toast from "react-hot-toast";
+import axios from "axios";
 
 const Login = () => {
     const navigate = useNavigate();
@@ -14,18 +15,31 @@ const Login = () => {
             navigate('/')
         }
     },[user, navigate])
-    const form = location.state || '/';
-    // Google Signin
-    const handleGoogleSignIn = async () => {
-        try {
-            await signInWithGoogle()
-            toast.success('Signin Successful')
-            navigate(form, { replace: true })
-        } catch (err) {
-            console.log(err)
-            toast.error(err?.message)
-        }
+   const from = location.state || '/'
+  // Google Signin
+  const handleGoogleSignIn = async () => {
+    try {
+      // 1. google sign in from firebase
+      const result = await signInWithGoogle()
+      console.log(result.user)
+
+      //2. get token from server using email
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_URL}/jwt`,
+        {
+          email: result?.user?.email,
+        },
+        { withCredentials: true }
+      )
+      console.log(data)
+      toast.success('Signin Successful')
+      navigate(from, { replace: true })
+    } catch (err) {
+      console.log(err)
+      toast.error(err?.message)
     }
+  }
+
 
     // Email Password Signin
     const handleSignIn = async e => {

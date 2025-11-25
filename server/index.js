@@ -1,5 +1,7 @@
 const express = require('express')
 const cors = require('cors')
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const port = process.env.PORT || 5000
@@ -28,6 +30,33 @@ async function run() {
   try {
     const jobsCollection = client.db('soloSphere').collection('jobs')
     const bidsCollection = client.db('soloSphere').collection('bids')
+
+    // jwt generate token
+    app.post('/jwt', async (req, res) => {
+      const user = req.body
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: '1d',
+      })
+      res
+        .cookie('token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        })
+        .send({ success: true })
+    })
+
+    // Clear token on logout
+    app.get('/logout', (req, res) => {
+      res
+        .clearCookie('token', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+          maxAge: 0,
+        })
+        .send({ success: true })
+    })
 
     // Get all jobs data from db
     app.get('/jobs', async (req, res) => {
@@ -107,6 +136,18 @@ async function run() {
       const query = { 'buyer.email': email }
       const result = await bidsCollection.find(query).toArray()
       res.send(result)
+    })
+
+    // update bid status
+    app.patch('/bid/:id', async (req, res)=>{
+      const id = req.params.id;
+      const status = req.body;
+      const query = {_id: new ObjectId(id)};
+      const updateDoc ={
+        $set: status,
+      }
+      const result = await bidsCollection.updateOne(query, updateDoc);
+      res.send(result);
     })
 
 

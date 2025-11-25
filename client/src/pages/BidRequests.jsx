@@ -3,20 +3,31 @@ import { AuthContext } from "../provider/AuthProvider";
 import axios from "axios";
 
 const BidRequests = () => {
-    const { user } = useContext(AuthContext);
-    const [bids, setBids] = useState([]);
+  const { user } = useContext(AuthContext);
+  const [bids, setBids] = useState([]);
 
-    useEffect(() => {
-        getData()
-    }, [user])
+  useEffect(() => {
+    getData()
+  }, [user])
 
-    const getData = async () => {
-        const { data } = await axios(
-            `${import.meta.env.VITE_API_URL}/bid-requests/${user?.email}`
-        )
-        setBids(data)
-    }
-    console.log(bids)
+  const getData = async () => {
+    const { data } = await axios(
+      `${import.meta.env.VITE_API_URL}/bid-requests/${user?.email}`
+    )
+    setBids(data)
+  }
+
+  // handleStatus
+  const handleStatus = async (id, preStatus, status) => {
+    if (preStatus === status) return console.log('Sry bhai hobe nah....')
+    console.log(id, preStatus, status);
+    const { data } = await axios.patch(
+      `${import.meta.env.VITE_API_URL}/bid/${id}`, { status }
+    )
+    console.log(data);
+    getData()
+  }
+
   return (
     <section className='container px-4 mx-auto pt-12'>
       <div className='flex items-center gap-x-3'>
@@ -87,106 +98,97 @@ const BidRequests = () => {
                   </tr>
                 </thead>
                 <tbody className='bg-white divide-y divide-gray-200 '>
-                  {bids.map((bid)=>(
+                  {bids.map((bid) => (
                     <tr key={bid._id}>
-                    <td className='px-4 py-4 text-sm text-gray-500  whitespace-nowrap'>
-                      {bid.job_title}
-                    </td>
-                    <td className='px-4 py-4 text-sm text-gray-500  whitespace-nowrap'>
-                      {bid.email}
-                    </td>
+                      <td className='px-4 py-4 text-sm text-gray-500  whitespace-nowrap'>
+                        {bid.job_title}
+                      </td>
+                      <td className='px-4 py-4 text-sm text-gray-500  whitespace-nowrap'>
+                        {bid.email}
+                      </td>
 
-                    <td className='px-4 py-4 text-sm text-gray-500  whitespace-nowrap'>
-                      {new Date(bid.deadline).toLocaleDateString()}
-                    </td>
+                      <td className='px-4 py-4 text-sm text-gray-500  whitespace-nowrap'>
+                        {new Date(bid.deadline).toLocaleDateString()}
+                      </td>
 
-                    <td className='px-4 py-4 text-sm text-gray-500  whitespace-nowrap'>
-                      ${bid.price}
-                    </td>
-                    <td className='px-4 py-4 text-sm whitespace-nowrap'>
-                      <div className='flex items-center gap-x-2'>
+                      <td className='px-4 py-4 text-sm text-gray-500  whitespace-nowrap'>
+                        ${bid.price}
+                      </td>
+                      <td className='px-4 py-4 text-sm whitespace-nowrap'>
+                        <div className='flex items-center gap-x-2'>
                           <p
-                            className={`px-3 py-1 rounded-full ${
-                              bid.category === 'Web Development' &&
+                            className={`px-3 py-1 rounded-full ${bid.category === 'Web Development' &&
                               'text-blue-500 bg-blue-100/60'
-                            } ${
-                              bid.category === 'Graphics Design' &&
+                              } ${bid.category === 'Graphics Design' &&
                               'text-emerald-500 bg-emerald-100/60'
-                            } ${
-                              bid.category === 'Digital Marketing' &&
+                              } ${bid.category === 'Digital Marketing' &&
                               'text-pink-500 bg-pink-100/60'
-                            } text-xs`}
+                              } text-xs`}
                           >
                             {bid.category}
                           </p>
                         </div>
-                    </td>
-                    <td className='px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap'>
-                      <div
-                          className={`inline-flex items-center px-3 py-1 rounded-full gap-x-2 ${
-                            bid.status === 'Pending' &&
+                      </td>
+                      <td className='px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap'>
+                        <div
+                          className={`inline-flex items-center px-3 py-1 rounded-full gap-x-2 ${bid.status === 'Pending' &&
                             'bg-yellow-100/60 text-yellow-500'
-                          } ${
-                            bid.status === 'In Progress' &&
+                            } ${bid.status === 'In Progress' &&
                             'bg-blue-100/60 text-blue-500'
-                          } ${
-                            bid.status === 'Complete' &&
+                            } ${bid.status === 'Complete' &&
                             'bg-emerald-100/60 text-emerald-500'
-                          } ${
-                            bid.status === 'Rejected' &&
+                            } ${bid.status === 'Rejected' &&
                             'bg-red-100/60 text-red-500'
-                          } `}
+                            } `}
                         >
                           <span
-                            className={`h-1.5 w-1.5 rounded-full ${
-                              bid.status === 'Pending' && 'bg-yellow-500'
-                            } ${
-                              bid.status === 'In Progress' && 'bg-blue-500'
-                            } ${bid.status === 'Complete' && 'bg-green-500'} ${
-                              bid.status === 'Rejected' && 'bg-red-500'
-                            }  `}
+                            className={`h-1.5 w-1.5 rounded-full ${bid.status === 'Pending' && 'bg-yellow-500'
+                              } ${bid.status === 'In Progress' && 'bg-blue-500'
+                              } ${bid.status === 'Complete' && 'bg-green-500'} ${bid.status === 'Rejected' && 'bg-red-500'
+                              }  `}
                           ></span>
                           <h2 className='text-sm font-normal '>{bid.status}</h2>
                         </div>
-                    </td>
-                    <td className='px-4 py-4 text-sm whitespace-nowrap'>
-                      <div className='flex items-center gap-x-6'>
-                        <button className='text-gray-500 transition-colors duration-200   hover:text-red-500 focus:outline-none'>
-                          <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            fill='none'
-                            viewBox='0 0 24 24'
-                            strokeWidth='1.5'
-                            stroke='currentColor'
-                            className='w-5 h-5'
-                          >
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              d='m4.5 12.75 6 6 9-13.5'
-                            />
-                          </svg>
-                        </button>
+                      </td>
+                      <td className='px-4 py-4 text-sm whitespace-nowrap'>
+                        <div className='flex items-center gap-x-6'>
+                          <button onClick={() => handleStatus(bid._id, bid.status, 'In Progress')} disabled={bid.status === 'Complete'} className='text-gray-500 transition-colors duration-200   hover:text-red-500 focus:outline-none'>
+                            <svg
+                              xmlns='http://www.w3.org/2000/svg'
+                              fill='none'
+                              viewBox='0 0 24 24'
+                              strokeWidth='1.5'
+                              stroke='currentColor'
+                              className='w-5 h-5'
+                            >
+                              <path
+                                strokeLinecap='round'
+                                strokeLinejoin='round'
+                                d='m4.5 12.75 6 6 9-13.5'
+                              />
+                            </svg>
+                          </button>
 
-                        <button className='text-gray-500 transition-colors duration-200   hover:text-yellow-500 focus:outline-none'>
-                          <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            fill='none'
-                            viewBox='0 0 24 24'
-                            strokeWidth='1.5'
-                            stroke='currentColor'
-                            className='w-5 h-5'
-                          >
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              d='M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636'
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                          <button onClick={() => handleStatus(bid._id, bid.status, 'Rejected')} 
+                          disabled={bid.status === 'Complete'} className='text-gray-500 transition-colors duration-200   hover:text-yellow-500 focus:outline-none'>
+                            <svg
+                              xmlns='http://www.w3.org/2000/svg'
+                              fill='none'
+                              viewBox='0 0 24 24'
+                              strokeWidth='1.5'
+                              stroke='currentColor'
+                              className='w-5 h-5'
+                            >
+                              <path
+                                strokeLinecap='round'
+                                strokeLinejoin='round'
+                                d='M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636'
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
                   ))}
                 </tbody>
               </table>
