@@ -10,6 +10,7 @@ const BidRequests = () => {
     getData()
   }, [user])
 
+  
   const getData = async () => {
     const { data } = await axios(
       `${import.meta.env.VITE_API_URL}/bid-requests/${user?.email}`
