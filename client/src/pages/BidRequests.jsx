@@ -1,33 +1,53 @@
-import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../provider/AuthProvider";
-import axios from "axios";
-
+import toast from 'react-hot-toast'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import useAxiosSecure from '../hooks/useAxiosSecure'
+import useAuth from '../hooks/useAuth'
 const BidRequests = () => {
-  const { user } = useContext(AuthContext);
-  const [bids, setBids] = useState([]);
+  const { user } = useAuth()
+  const axiosSecure = useAxiosSecure()
+  const queryClient = useQueryClient()
+  const { data: bids = [], isLoading } = useQuery({
+    queryFn: () => getData(),
+    queryKey: ['bids', user?.email],
+  })
+  console.log(bids)
+  console.log(isLoading)
+  // const [bids, setBids] = useState([])
 
-  useEffect(() => {
-    getData()
-  }, [user])
+  // useEffect(() => {
+  //   getData()
+  // }, [user])
 
-  
   const getData = async () => {
-    const { data } = await axios(
-      `${import.meta.env.VITE_API_URL}/bid-requests/${user?.email}`
-    )
-    setBids(data)
+    const { data } = await axiosSecure(`/bid-requests/${user?.email}`)
+    return data
   }
+
+  const { mutateAsync } = useMutation({
+    mutationFn: async ({ id, status }) => {
+      const { data } = await axiosSecure.patch(`/bid/${id}`, { status })
+      console.log(data)
+      return data
+    },
+    onSuccess: () => {
+      console.log('Wow, data updated')
+      toast.success('Updated')
+      // refresh ui for latest data
+      // refetch()
+
+      // Kothin
+      queryClient.invalidateQueries({ queryKey: ['bids'] })
+    },
+  })
 
   // handleStatus
-  const handleStatus = async (id, preStatus, status) => {
-    if (preStatus === status) return console.log('Sry bhai hobe nah....')
-    console.log(id, preStatus, status);
-    const { data } = await axios.patch(
-      `${import.meta.env.VITE_API_URL}/bid/${id}`, { status }
-    )
-    console.log(data);
-    getData()
+  const handleStatus = async (id, prevStatus, status) => {
+    console.log(id, prevStatus, status)
+    if (prevStatus === status) return console.log('Sry vai.. hobena')
+    await mutateAsync({ id, status })
   }
+
+  if (isLoading) return <p>Data is still loading......</p>
 
   return (
     <section className='container px-4 mx-auto pt-12'>
@@ -99,7 +119,7 @@ const BidRequests = () => {
                   </tr>
                 </thead>
                 <tbody className='bg-white divide-y divide-gray-200 '>
-                  {bids.map((bid) => (
+                  {bids.map(bid => (
                     <tr key={bid._id}>
                       <td className='px-4 py-4 text-sm text-gray-500  whitespace-nowrap'>
                         {bid.job_title}
@@ -118,13 +138,16 @@ const BidRequests = () => {
                       <td className='px-4 py-4 text-sm whitespace-nowrap'>
                         <div className='flex items-center gap-x-2'>
                           <p
-                            className={`px-3 py-1 rounded-full ${bid.category === 'Web Development' &&
+                            className={`px-3 py-1 rounded-full ${
+                              bid.category === 'Web Development' &&
                               'text-blue-500 bg-blue-100/60'
-                              } ${bid.category === 'Graphics Design' &&
+                            } ${
+                              bid.category === 'Graphics Design' &&
                               'text-emerald-500 bg-emerald-100/60'
-                              } ${bid.category === 'Digital Marketing' &&
+                            } ${
+                              bid.category === 'Digital Marketing' &&
                               'text-pink-500 bg-pink-100/60'
-                              } text-xs`}
+                            } text-xs`}
                           >
                             {bid.category}
                           </p>
@@ -132,28 +155,42 @@ const BidRequests = () => {
                       </td>
                       <td className='px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap'>
                         <div
-                          className={`inline-flex items-center px-3 py-1 rounded-full gap-x-2 ${bid.status === 'Pending' &&
+                          className={`inline-flex items-center px-3 py-1 rounded-full gap-x-2 ${
+                            bid.status === 'Pending' &&
                             'bg-yellow-100/60 text-yellow-500'
-                            } ${bid.status === 'In Progress' &&
+                          } ${
+                            bid.status === 'In Progress' &&
                             'bg-blue-100/60 text-blue-500'
-                            } ${bid.status === 'Complete' &&
+                          } ${
+                            bid.status === 'Complete' &&
                             'bg-emerald-100/60 text-emerald-500'
-                            } ${bid.status === 'Rejected' &&
+                          } ${
+                            bid.status === 'Rejected' &&
                             'bg-red-100/60 text-red-500'
-                            } `}
+                          } `}
                         >
                           <span
-                            className={`h-1.5 w-1.5 rounded-full ${bid.status === 'Pending' && 'bg-yellow-500'
-                              } ${bid.status === 'In Progress' && 'bg-blue-500'
-                              } ${bid.status === 'Complete' && 'bg-green-500'} ${bid.status === 'Rejected' && 'bg-red-500'
-                              }  `}
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              bid.status === 'Pending' && 'bg-yellow-500'
+                            } ${
+                              bid.status === 'In Progress' && 'bg-blue-500'
+                            } ${bid.status === 'Complete' && 'bg-green-500'} ${
+                              bid.status === 'Rejected' && 'bg-red-500'
+                            }  `}
                           ></span>
                           <h2 className='text-sm font-normal '>{bid.status}</h2>
                         </div>
                       </td>
                       <td className='px-4 py-4 text-sm whitespace-nowrap'>
                         <div className='flex items-center gap-x-6'>
-                          <button onClick={() => handleStatus(bid._id, bid.status, 'In Progress')} disabled={bid.status === 'Complete'} className='text-gray-500 transition-colors duration-200   hover:text-red-500 focus:outline-none'>
+                          {/* Accept Button: In Progress */}
+                          <button
+                            onClick={() =>
+                              handleStatus(bid._id, bid.status, 'In Progress')
+                            }
+                            disabled={bid.status === 'Complete'}
+                            className='disabled:cursor-not-allowed text-gray-500 transition-colors duration-200   hover:text-red-500 focus:outline-none'
+                          >
                             <svg
                               xmlns='http://www.w3.org/2000/svg'
                               fill='none'
@@ -169,9 +206,14 @@ const BidRequests = () => {
                               />
                             </svg>
                           </button>
-
-                          <button onClick={() => handleStatus(bid._id, bid.status, 'Rejected')} 
-                          disabled={bid.status === 'Complete'} className='text-gray-500 transition-colors duration-200   hover:text-yellow-500 focus:outline-none'>
+                          {/* Reject Button */}
+                          <button
+                            onClick={() =>
+                              handleStatus(bid._id, bid.status, 'Rejected')
+                            }
+                            disabled={bid.status === 'Complete'}
+                            className='disabled:cursor-not-allowed text-gray-500 transition-colors duration-200   hover:text-yellow-500 focus:outline-none'
+                          >
                             <svg
                               xmlns='http://www.w3.org/2000/svg'
                               fill='none'

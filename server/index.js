@@ -97,7 +97,20 @@ async function run() {
 
     // Save a bid data in db
     app.post('/bid', async (req, res) => {
-      const bidData = req.body;
+      const bidData = req.body
+
+      // check if its a duplicate request
+      const query = {
+        email: bidData.email,
+        jobId: bidData.jobId,
+      }
+      const alreadyApplied = await bidsCollection.findOne(query)
+      console.log(alreadyApplied)
+      if (alreadyApplied) {
+        return res
+          .status(400)
+          .send('You have already placed a bid on this job.')
+      }
       const result = await bidsCollection.insertOne(bidData);
       res.send(result);
     })
