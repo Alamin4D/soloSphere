@@ -97,8 +97,7 @@ async function run() {
 
     // Save a bid data in db
     app.post('/bid', async (req, res) => {
-      const bidData = req.body
-
+      const bidData = req.body;
       // check if its a duplicate request
       const query = {
         email: bidData.email,
