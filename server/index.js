@@ -66,7 +66,7 @@ async function run() {
         .send({ success: true })
     })
 
-    
+
     // Clear token on logout
     app.get('/logout', (req, res) => {
       res
@@ -157,7 +157,7 @@ async function run() {
       const result = await jobsCollection.updateOne(query, updateDoc, options)
       res.send(result)
     })
-    
+
 
     // get all bids for a user by email from db
     app.get('/my-bids/:email', verifyToken, async (req, res) => {
@@ -174,18 +174,44 @@ async function run() {
       const result = await bidsCollection.find(query).toArray()
       res.send(result)
     })
-    
+
 
     // update bid status
-    app.patch('/bid/:id', async (req, res)=>{
+    app.patch('/bid/:id', async (req, res) => {
       const id = req.params.id;
       const status = req.body;
-      const query = {_id: new ObjectId(id)};
-      const updateDoc ={
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
         $set: status,
       }
       const result = await bidsCollection.updateOne(query, updateDoc);
       res.send(result);
+    })
+
+
+    // Get all jobs data from db for pagination
+    app.get('/all-jobs', async (req, res) => {
+      const size = parseInt(req.query.size);
+      const page = req.query.page - 1
+      const filter = req.query.filter
+      console.log(size, page, filter)
+      let query = {};
+      if (filter) {
+        query = { category: filter }
+      }
+      const result = await jobsCollection.find(query).skip(size * page).limit(size).toArray();
+      res.send(result);
+    })
+
+    // Get all jobs data count from db
+    app.get('/jobs-count', async (req, res) => {
+      const filter = req.query.filter
+      let query = {};
+      if (filter) {
+        query = { category: filter }
+      }
+      const count = await jobsCollection.countDocuments(query);
+      res.send({ count });
     })
 
 
