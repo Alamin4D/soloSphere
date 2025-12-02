@@ -142,6 +142,7 @@ async function run() {
       const result = await jobsCollection.deleteOne(query);
       res.send(result);
     })
+    
 
     // update a job in db
     app.put('/job/:id', verifyToken, async (req, res) => {
